@@ -1,4 +1,4 @@
-FROM node:onbuild
+FROM node:4
 
 RUN mkdir -p /app
 WORKDIR /app

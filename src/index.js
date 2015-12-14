@@ -1,13 +1,19 @@
-var mqtt    = require('mqtt');
-var client  = mqtt.connect('mqtt://192.168.99.100');
- 
-client.on('connect', function () {
-  client.subscribe('presence');
-  client.publish('presence', 'Hello mqtt');
+var mqtt = require('mqtt'),
+    express = require('express'),
+    bodyParser = require('body-parser'),
+    app = express()
+
+console.log('Entrust Agent starting');
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }))
+
+app.post('/api/:key', function(req, res) {
+  console.log('received data to bubble up:');
+  console.log('key: ', req.params.key);
+  console.log('payload: ', req.body);
+
+  res.send('hello world' + req.params.key);
 });
- 
-client.on('message', function (topic, message) {
-  // message is Buffer 
-  console.log(message.toString());
-  client.end();
-});
+
+var server = app.listen(8080);
