@@ -1,4 +1,4 @@
-var mqtt = require('mqtt'),
+var mqtt = require('./mqtt'),
     express = require('express'),
     bodyParser = require('body-parser'),
     app = express()
@@ -9,11 +9,15 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }))
 
 app.post('/api/:key', function(req, res) {
-  console.log('received data to bubble up:');
-  console.log('key: ', req.params.key);
-  console.log('payload: ', req.body);
+  var key = req.params.key;
+  var value = req.body;
 
-  res.send('hello world' + req.params.key);
+  console.log('received data to bubble up:');
+  console.log('key: ', key);
+  console.log('payload: ', value);
+
+  mqtt.send(key, value);
+  res.end();
 });
 
 var server = app.listen(8080);

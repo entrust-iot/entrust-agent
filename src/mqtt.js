@@ -1,17 +1,29 @@
-var mqtt    = require('mqtt');
-var client  = mqtt.connect('mqtt://192.168.99.100');
+var mqtt = require('mqtt');
 
-export.send = function (topic, message) {
-  console.log('Sending', message, 'to', topic);
-};
+function MqttInterface() {
+  var self = this;
 
-client.on('connect', function () {
-  client.subscribe('presence');
-  client.publish('presence', 'Hello mqtt');
-});
- 
-client.on('message', function (topic, message) {
-  // message is Buffer 
-  console.log(message.toString());
-  client.end();
-});
+  self.send = send;
+  self.isConnected = false;
+
+  var client = mqtt.connect('mqtt://192.168.99.100');
+
+  function send(key, value) {
+    if (self.isConnected) {
+      client.publish(getTopic(key), JSON.stringify(value));
+    } else {
+      console.log('no can send');
+    }
+  }
+
+  function getTopic(key) {
+    return '/tenant/id/' + key;
+  }
+
+  client.on('connect', function () {
+    console.log('mqtt connection established to server');
+    self.isConnected = true;
+  });
+}
+
+module.exports = new MqttInterface();
