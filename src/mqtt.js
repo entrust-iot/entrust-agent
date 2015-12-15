@@ -1,4 +1,7 @@
-var mqtt = require('mqtt');
+'use strict';
+
+var mqtt = require('mqtt'),
+    id = require('./identification');
 
 function MqttInterface() {
   var self = this;
@@ -17,7 +20,7 @@ function MqttInterface() {
   }
 
   function getTopic(key) {
-    return '/tenant/id/' + key;
+    return id.getTopic() + key;
   }
 
   client.on('connect', function () {
