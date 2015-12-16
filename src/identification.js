@@ -38,7 +38,7 @@ function IdentificationService() {
   }
 
   function getTopic() { 
-    return getTenantId() + '/' + getUniqueId();
+    return getTenantId() + '/' + getUniqueId() + '/';
   }
 
   function getUniqueId() {
