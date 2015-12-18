@@ -1,15 +1,15 @@
 'use strict';
 
 var mqtt = require('mqtt'),
-    id = require('./identification');
+    id = require('./identification'),
+    discovery = require('./discovery');
 
 function MqttInterface() {
   var self = this;
+  var client = undefined;
 
   self.send = send;
   self.isConnected = false;
-
-  var client = mqtt.connect('mqtt://192.168.99.100');
 
   function send(key, value) {
     if (self.isConnected) {
@@ -19,14 +19,33 @@ function MqttInterface() {
     }
   }
 
+  function connect() {
+    discovery.getEdgeGatewayIp().then(function(serverIp) {
+      console.log('edge gw ip:', serverIp);
+      client = mqtt.connect('mqtt://' + serverIp);
+      setupEventHandler();
+    });
+  }
+
+  function setupEventHandler() {
+    client.on('connect', function () {
+      console.log('mqtt connection established to server');
+      self.isConnected = true;
+    });
+
+    client.on('close', function () {
+      self.isConnected = false;
+      client = undefined;
+      connect();
+    });
+  };
+
   function getTopic(key) {
     return id.getTopic() + key;
   }
 
-  client.on('connect', function () {
-    console.log('mqtt connection established to server');
-    self.isConnected = true;
-  });
+  connect();
+
 }
 
 module.exports = new MqttInterface();
