@@ -7,7 +7,8 @@ function IdentificationService() {
       tenantId,
       uniqueId,
       isinitialised = false,
-      identificationServerUrl = 'http://stark-shore-8953.herokuapp.com/init' ;
+      identificationServerUrl = 'http://stark-shore-8953.herokuapp.com/init',
+      macaddress = require('macaddress');
 
   self.init = init;
   self.isInitialised = isInitialised;
@@ -18,15 +19,23 @@ function IdentificationService() {
   function init(apiKey) {
     var q = Q.defer();
 
-    http.get(identificationServerUrl, function(res) {
-      res.on('data', function (chunk) {
-        var data = JSON.parse(chunk);
+    macaddress.one(function(err, mac) {
+      var loginUrl = identificationServerUrl + '/' + apiKey + '/' + mac;
 
-        uniqueId = data.id;
-        tenantId = data.tenant;
-        
-        isinitialised = true;
-        q.resolve(getTopic());
+      console.log(loginUrl);
+
+      http.get(loginUrl, function(res) {
+        res.on('data', function (chunk) {
+          var data = JSON.parse(chunk);
+
+          console.log(data);
+
+          uniqueId = data.id;
+          tenantId = data.tenant;
+          
+          isinitialised = true;
+          q.resolve(getTopic());
+        });
       });
     });
 
