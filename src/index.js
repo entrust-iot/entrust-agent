@@ -23,7 +23,7 @@ app.get('/login/:key', function(req, res) {
 });
 
 app.post('/api/:key', function(req, res) {
-  if (agent.ready()) {
+  if (!agent.ready()) {
     res.status(403);
     res.end();
     return;

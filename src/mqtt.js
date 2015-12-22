@@ -21,11 +21,11 @@ function MqttInterface() {
 
   function connect() {
     discovery.getEdgeGatewayIp().then(function(serverIp) {
-      if (!self.isConnected) {
+  //    if (!self.isConnected) {
         console.log('edge gw ip:', serverIp);
         client = mqtt.connect('mqtt://' + serverIp);
         setupEventHandler();
-      }
+  //    }
     });
   }
 
