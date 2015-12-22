@@ -1,4 +1,4 @@
-FROM node:4
+FROM hypriot/rpi-node:4
 
 RUN mkdir -p /app
 WORKDIR /app
