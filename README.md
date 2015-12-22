@@ -6,5 +6,5 @@ to communicate with the api.
 
 ### Interface
 
-/login/APIKEY => must be called first, will return the topic prefix ( tenant/id )
-/api/key => The body of the request can any json encoded object, will be send to mqtt server
+- /login/APIKEY => must be called first, will return the topic prefix ( tenant/id )
+- /api/key => The body of the request can any json encoded object, will be send to mqtt server
