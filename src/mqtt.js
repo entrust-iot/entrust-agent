@@ -21,26 +21,33 @@ function MqttInterface() {
 
   function connect() {
     discovery.getEdgeGatewayIp().then(function(serverIp) {
-  //    if (!self.isConnected) {
-        console.log('edge gw ip:', serverIp);
-        client = mqtt.connect('mqtt://' + serverIp);
-        setupEventHandler();
-  //    }
+      console.log('edge gw ip:', serverIp);
+      client = mqtt.connect('mqtt://' + serverIp);
+      setupEventHandler();
     });
   }
 
-  function setupEventHandler() {
-    client.on('connect', function () {
-      console.log('mqtt connection established to server');
-      self.isConnected = true;
-    });
+  function connectionHandler() {
+    console.log('mqtt connection established to server');
+    self.isConnected = true;
+  }
 
-    client.on('close', function () {
-      self.isConnected = false;
-      client = undefined;
-      connect();
-    });
-  };
+  function closeHandler() {
+    self.isConnected = false;
+    removeHandlers();
+    client = undefined;
+    connect();
+  }
+
+  function setupEventHandler() {
+    client.on('connect', connectionHandler);
+    client.on('close', closeHandler);
+  }
+
+  function removeHandlers() {
+    client.removeListener('connect', connectionHandler);
+    client.removeListener('close', closeHandler);
+  }
 
   function getTopic(key) {
     return id.getTopic() + key;
