@@ -1,7 +1,6 @@
 'use strict';
 
-var mqtt = require('./mqtt'),
-    id = require('./identification'),
+var agent = require('./agent'),
     express = require('express'),
     bodyParser = require('body-parser'),
     app = express()
@@ -15,7 +14,7 @@ app.get('/login/:key', function(req, res) {
   console.log('login attempt');
   var apiKey = req.params.key;
 
-  id.init(apiKey)
+  agent.init(apiKey)
     .then(function success(topic) {
       res.send(topic);
     }, function error() {
@@ -24,7 +23,7 @@ app.get('/login/:key', function(req, res) {
 });
 
 app.post('/api/:key', function(req, res) {
-  if (!id.isInitialised()) {
+  if (agent.ready()) {
     res.status(403);
     res.end();
     return;
@@ -37,7 +36,7 @@ app.post('/api/:key', function(req, res) {
   console.log('key: ', key);
   console.log('payload: ', value);
 
-  mqtt.send(key, value);
+  agent.send(key, value);
   res.end();
 });
 
