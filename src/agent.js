@@ -10,7 +10,9 @@ function Agent() {
   self.send = send;
 
   function init(apiKey) {
-    return id.init(apiKey)
+    return mqtt.connect().then(function() {
+      return id.init(apiKey);
+    });
   }
 
   function ready() {

@@ -3,12 +3,15 @@
 function IdentificationService() {
   var self = this,
       http = require('http'),
+      mqtt = require('./mqtt'),
+      guid = require('./guid'),
       Q = require('q'),
       tenantId,
       uniqueId,
       isinitialised = false,
-      identificationServerUrl = 'http://stark-shore-8953.herokuapp.com/init',
-      macaddress = require('macaddress');
+      macaddress = require('macaddress'),
+      agentId = guid(),
+      initPromise = undefined;
 
   self.init = init;
   self.isInitialised = isInitialised;
@@ -17,29 +20,42 @@ function IdentificationService() {
   self.getTopic = getTopic;
 
   function init(apiKey) {
-    var q = Q.defer();
+    initPromise = Q.defer();
 
     macaddress.one(function(err, mac) {
-      var loginUrl = identificationServerUrl + '/' + apiKey + '/' + mac;
+      var initObject = {
+        'id': agentId,
+        'apiKey': apiKey,
+        'mac': mac
+      };
 
-      console.log(loginUrl);
+      console.log(JSON.stringify(initObject));
+      console.log(mqtt);
 
-      http.get(loginUrl, function(res) {
-        res.on('data', function (chunk) {
-          var data = JSON.parse(chunk);
-
-          console.log(data);
-
-          uniqueId = data.id;
-          tenantId = data.tenant;
-          
-          isinitialised = true;
-          q.resolve(getTopic());
-        });
-      });
+      mqtt.subscribe(agentId, finishInit);
+      mqtt.sendInit(initObject);
     });
 
-    return q.promise;
+    return initPromise.promise;
+  }
+
+  function finishInit(topic, message, packet) {
+    console.log('got back info on INIT');
+    mqtt.unSubscribe(agentId, finishInit);
+
+    var data = JSON.parse(message);
+
+    console.log(data);
+
+    uniqueId = data.id;
+    tenantId = data.tenant;
+
+    mqtt.setTopic(getTopic());
+
+    if (initPromise) {
+      initPromise.resolve(getTopic());
+      initPromise = null;
+    }
   }
 
   function isInitialised() {

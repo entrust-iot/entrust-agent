@@ -1,35 +1,57 @@
 'use strict';
 
-var mqtt = require('mqtt'),
-    id = require('./identification'),
-    discovery = require('./discovery');
 
 function MqttInterface() {
   var self = this;
   var client = undefined;
+  var topic = undefined;
 
-  self.send = send;
+  var mqtt = require('mqtt'),
+      Q = require('q'),
+      discovery = require('./discovery');
+
+  self.send = sendService;
+  self.connect = connect;
   self.isConnected = false;
+  self.setTopic = setTopic;
+  self.sendInit = sendInit;
+  self.subscribe = subscribe;
+  self.unSubscribe = unSubscribe;
 
-  function send(key, value) {
+  function sendInit(initObject) {
+    send('init', initObject);
+  }
+
+  function sendService(key, value) {
+    send(getTopic(key), value);
+  }
+
+  function send(topic, value) {
     if (self.isConnected) {
-      client.publish(getTopic(key), JSON.stringify(value));
+      client.publish(topic, JSON.stringify(value));
     } else {
       console.log('no can send');
     }
   }
 
   function connect() {
-    discovery.getEdgeGatewayIp().then(function(serverIp) {
+    return discovery.getEdgeGatewayIp().then(function(serverIp) {
       console.log('edge gw ip:', serverIp);
       client = mqtt.connect('mqtt://' + serverIp);
-      setupEventHandler();
+      return setupEventHandler();
     });
   }
 
-  function connectionHandler() {
-    console.log('mqtt connection established to server');
-    self.isConnected = true;
+  function subscribe(topic, cb) {
+    if (client) {
+      client.subscribe('agents/'+topic);
+      client.on('message', cb);
+    }
+  }
+
+  function unSubscribe(topic, cb) {
+    client.unsubscribe('agents/'+topic)
+    client.removeListener('message', cb);
   }
 
   function closeHandler() {
@@ -40,8 +62,18 @@ function MqttInterface() {
   }
 
   function setupEventHandler() {
-    client.on('connect', connectionHandler);
+    var connectionPromise = Q.defer();
+    client.on('connect', connectionHandler(connectionPromise));
     client.on('close', closeHandler);
+    return connectionPromise.promise;
+  }
+
+  function connectionHandler(promise) {
+    return function () {
+      console.log('mqtt connection established to server');
+      self.isConnected = true;
+      promise.resolve();
+    };
   }
 
   function removeHandlers() {
@@ -50,11 +82,12 @@ function MqttInterface() {
   }
 
   function getTopic(key) {
-    return id.getTopic() + key;
+    return 'service/' + topic + key;
   }
 
-  connect();
-
+  function setTopic(t) {
+    topic = t;
+  }
 }
 
 module.exports = new MqttInterface();
