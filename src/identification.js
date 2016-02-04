@@ -24,7 +24,7 @@ function IdentificationService() {
 
     macaddress.one(function(err, mac) {
       var initObject = {
-        'id': agentId,
+        'agentId': agentId,
         'apiKey': apiKey,
         'mac': mac
       };
