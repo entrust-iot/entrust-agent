@@ -11,8 +11,14 @@ function MqttInterface() {
       discovery = require('./discovery'),
       connectionPromise = Q.defer();
 
+  const fs = require('fs');
+
+  const SEC_DIR = 'security';
+  const SECURE_CERT = SEC_DIR + '/client.crt';
+  const SECURE_KEY = SEC_DIR + '/client.key';
+  const SECURE_CA = SEC_DIR + '/ca.crt';
+
   self.send = sendService;
-  self.connect = connect;
   self.connected = connected;
   self.isConnected = false;
   self.setTopic = setTopic;
@@ -41,12 +47,28 @@ function MqttInterface() {
   }
 
   function connect() {
-    return discovery.getEdgeGatewayIp().then(function(serverIp) {
+    discovery.getEdgeGatewayIp().then(function(serverIp) {
       console.log('edge gw ip:', serverIp);
-      client = mqtt.connect('mqtt://' + serverIp);
-      return setupEventHandler();
+      readSecureFiles().then(function(options) {
+        client = mqtt.connect('mqtts://' + serverIp, options);
+        setupEventHandler();
+      }).done();
     });
   }
+
+  function readSecureFiles() {
+    return Q.all([SECURE_CERT, SECURE_KEY, SECURE_CA]
+      .map(function(path) {
+        return Q.nfcall(fs.readFile, path);
+      }))
+    .spread(function (cert, key, ca) {
+      return {
+        cert: cert,
+        key: key,
+        ca: ca
+      };
+    });
+  };
 
   function subscribe(topic, cb) {
     if (client) {
@@ -71,7 +93,6 @@ function MqttInterface() {
   function setupEventHandler() {
     client.on('connect', connectionHandler);
     client.on('close', closeHandler);
-    return connectionPromise.promise;
   }
 
   function connectionHandler() {

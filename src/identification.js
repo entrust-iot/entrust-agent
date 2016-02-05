@@ -8,7 +8,7 @@ function IdentificationService() {
       Q = require('q'),
       tenantId,
       uniqueId,
-      isinitialised = false,
+      is_initialised = false,
       macaddress = require('macaddress'),
       agentId = guid(),
       initPromise = undefined;
@@ -51,6 +51,7 @@ function IdentificationService() {
     tenantId = data.tenant;
 
     mqtt.setTopic(getTopic());
+    is_initialised = true;
 
     if (initPromise) {
       initPromise.resolve(getTopic());
@@ -59,7 +60,7 @@ function IdentificationService() {
   }
 
   function isInitialised() {
-    return isinitialised;
+    return is_initialised;
   }
 
   function getTopic() { 
