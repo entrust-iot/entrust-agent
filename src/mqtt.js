@@ -8,10 +8,12 @@ function MqttInterface() {
 
   var mqtt = require('mqtt'),
       Q = require('q'),
-      discovery = require('./discovery');
+      discovery = require('./discovery'),
+      connectionPromise = Q.defer();
 
   self.send = sendService;
   self.connect = connect;
+  self.connected = connected;
   self.isConnected = false;
   self.setTopic = setTopic;
   self.sendInit = sendInit;
@@ -32,6 +34,10 @@ function MqttInterface() {
     } else {
       console.log('no can send');
     }
+  }
+
+  function connected() {
+    return connectionPromise.promise;
   }
 
   function connect() {
@@ -58,22 +64,20 @@ function MqttInterface() {
     self.isConnected = false;
     removeHandlers();
     client = undefined;
+    connectionPromise = Q.defer();
     connect();
   }
 
   function setupEventHandler() {
-    var connectionPromise = Q.defer();
-    client.on('connect', connectionHandler(connectionPromise));
+    client.on('connect', connectionHandler);
     client.on('close', closeHandler);
     return connectionPromise.promise;
   }
 
-  function connectionHandler(promise) {
-    return function () {
-      console.log('mqtt connection established to server');
-      self.isConnected = true;
-      promise.resolve();
-    };
+  function connectionHandler() {
+    console.log('mqtt connection established to server');
+    self.isConnected = true;
+    connectionPromise.resolve();
   }
 
   function removeHandlers() {
@@ -88,6 +92,8 @@ function MqttInterface() {
   function setTopic(t) {
     topic = t;
   }
+
+  connect();
 }
 
 module.exports = new MqttInterface();
