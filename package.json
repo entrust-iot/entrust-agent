@@ -9,6 +9,7 @@
     "express": "latest",
     "macaddress": "^0.2.8",
     "mqtt": "1.6.1",
+    "pem": "^1.8.1",
     "q": "^1.4.1"
   }
 }

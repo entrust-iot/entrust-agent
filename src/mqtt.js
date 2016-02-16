@@ -14,8 +14,9 @@ function MqttInterface() {
       agentId = guid();
 
   const fs = require('fs');
+  const pem = require('pem');
 
-  const SEC_DIR = 'security';
+  const SEC_DIR = __dirname + '/security';
   const SECURE_CERT = SEC_DIR + '/client.crt';
   const SECURE_KEY = SEC_DIR + '/client.key';
   const SECURE_CA = SEC_DIR + '/ca.crt';
@@ -27,6 +28,7 @@ function MqttInterface() {
   self.sendInit = sendInit;
   self.subscribe = subscribe;
   self.unSubscribe = unSubscribe;
+  var certObject = {};
 
   function sendInit(initObject) {
     send('init', initObject);
@@ -38,7 +40,7 @@ function MqttInterface() {
 
   function send(topic, value) {
     if (self.isConnected) {
-      client.publish(topic, JSON.stringify(value));
+      client.publish(topic, JSON.stringify(Object.assign({}, value, certObject)));
     } else {
       console.log('no can send');
     }
@@ -71,6 +73,7 @@ function MqttInterface() {
         return Q.nfcall(fs.readFile, path);
       }))
     .spread(function (cert, key, ca) {
+      readCertificateName(cert);
       return {
         cert: cert,
         key: key,
@@ -121,6 +124,13 @@ function MqttInterface() {
 
   function setTopic(t) {
     topic = t;
+  }
+
+  function readCertificateName(certificate) {
+    Q.nfcall(pem.readCertificateInfo, certificate)
+      .then(function(info) {
+        certObject.certName = info.commonName;
+      }).done();
   }
 
   connect();
