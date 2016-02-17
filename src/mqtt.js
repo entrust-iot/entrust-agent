@@ -9,7 +9,9 @@ function MqttInterface() {
   var mqtt = require('mqtt'),
       Q = require('q'),
       discovery = require('./discovery'),
-      connectionPromise = Q.defer();
+      guid = require('./guid'),
+      connectionPromise = Q.defer(),
+      agentId = guid();
 
   const fs = require('fs');
 
@@ -50,6 +52,13 @@ function MqttInterface() {
     discovery.getEdgeGatewayIp().then(function(serverIp) {
       console.log('edge gw ip:', serverIp);
       readSecureFiles().then(function(options) {
+        options.will = {
+          topic: 'service/agent_disconnected',
+          payload: JSON.stringify({agentId: agentId}),
+          qos: 0,
+          retain: false
+        };
+
         client = mqtt.connect('mqtts://' + serverIp, options);
         setupEventHandler();
       }).done();
@@ -98,7 +107,7 @@ function MqttInterface() {
   function connectionHandler() {
     console.log('mqtt connection established to server');
     self.isConnected = true;
-    connectionPromise.resolve();
+    connectionPromise.resolve(agentId);
   }
 
   function removeHandlers() {

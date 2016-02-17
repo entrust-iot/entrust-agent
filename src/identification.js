@@ -10,7 +10,7 @@ function IdentificationService() {
       uniqueId,
       is_initialised = false,
       macaddress = require('macaddress'),
-      agentId = guid(),
+      agentId = undefined,
       initPromise = undefined;
 
   self.init = init;
@@ -19,7 +19,8 @@ function IdentificationService() {
   self.getUniqueId = getUniqueId;
   self.getTopic = getTopic;
 
-  function init(apiKey) {
+  function init(apiKey, aId) {
+    agentId = aId;
     initPromise = Q.defer();
 
     macaddress.one(function(err, mac) {
