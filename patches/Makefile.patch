@@ -1,0 +1,13 @@
+diff --git a/Makefile b/Makefile
+index 1303741..0e2b633 100644
+--- a/Makefile
++++ b/Makefile
+@@ -300,7 +300,7 @@ openssl_enginedir = ${exec_prefix}/lib/openssl/engines
+ libtpm_la_LIBADD = -lcrypto -lc -ltspi
+ libtpm_la_SOURCES = e_tpm.c e_tpm.h e_tpm_err.c
+ create_tpm_key_SOURCES = create_tpm_key.c
+-create_tpm_key_LDADD = -ltspi
++create_tpm_key_LDADD = -ltspi -lcrypto
+ all: all-recursive
+ 
+ .SUFFIXES:

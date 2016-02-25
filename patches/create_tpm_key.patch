@@ -1,0 +1,13 @@
+--- create_tpm_key.c	2016-02-25 11:39:45.945422774 -0500
++++ create_tpm_key.c	2016-02-24 15:48:19.575096910 -0500
+@@ -145,8 +145,8 @@
+ 	ASN1_OCTET_STRING *blob_str;
+ 	unsigned char	*blob_asn1 = NULL;
+ 	int		asn1_len;
+-	char		*filename, c, *openssl_key = NULL;
+-	int		option_index, auth = 0, popup = 0, wrap = 0;
++	char		*filename, *openssl_key = NULL;
++	int		option_index, c, auth = 0, popup = 0, wrap = 0;
+ 	UINT32		enc_scheme = TSS_ES_RSAESPKCSV15;
+ 	UINT32		sig_scheme = TSS_SS_RSASSAPKCS1V15_DER;
+ 	UINT32		key_size = 2048;

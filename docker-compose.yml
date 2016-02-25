@@ -3,3 +3,7 @@ agent:
   ports: 
     - "8080:8080"
     - "5555:5555/udp"
+  devices:
+    - "/dev/tpm0"
+  volumes:
+    - /var/lib/tpm:/var/lib/tpm
