@@ -10,6 +10,7 @@ function MqttInterface() {
       Q = require('q'),
       discovery = require('./discovery'),
       guid = require('./guid'),
+      tss = require('node-tss'),
       connectionPromise = Q.defer(),
       agentId = guid();
 
